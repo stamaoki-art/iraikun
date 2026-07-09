@@ -3,7 +3,7 @@ import requests
 import datetime
 
 # GASのWebアプリURLを設定
-GAS_WEBAPP_URL = "https://docs.google.com/spreadsheets/d/1Z1idFD1-pskOUr5LP3igPCjwhKFYWVXfPFXGYWPWSm0/edit?gid=0#gid=0"
+GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwX6NFQazHozOKPEoKP7NdANapZ7ZIj3nPJXjEIqm0hL5HEvHyCs856D9qgwPBUbnez1w/exec"
 
 st.title("📥 専用依頼フォーム")
 st.write("必要事項を入力して「送信」ボタンを押してください。")
