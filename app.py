@@ -39,7 +39,6 @@ if mode == "新規依頼フォーム":
         if not myoji or not email or not content:
             st.error("❌ 「苗字」「メールアドレス」「依頼内容」は必須入力です。")
         else:
-            # GAS側で新旧の処理を判定するため action: "new" を送る
             payload = {
                 "action": "new",
                 "myoji": myoji,
@@ -67,7 +66,6 @@ else:
     st.title("🛡️ 承認・ステータス管理パネル")
     st.write("処理する依頼を選択し、ステータスを更新してください。")
     
-    # スプレッドシートから現在のデータを取得（GASのdoGetが動く）
     with st.spinner("最新データを読み込み中..."):
         try:
             res = requests.get(GAS_WEBAPP_URL)
@@ -81,27 +79,23 @@ else:
             df = pd.DataFrame()
             st.error(f"データ通信エラー: {e}")
 
-    # データが存在する場合のみフォームを表示
     if not df.empty and "ID" in df.columns:
-        # IDリストを作成してプルダウンに
         id_list = df["ID"].tolist()
         selected_id = st.selectbox("処理するIDを選択:", id_list)
         
-        # 選択されたIDの行データを自動抽出
         row = df[df["ID"] == selected_id].iloc[0]
         
-        # 画面に現在の依頼情報を自動表示
         col1, col2 = st.columns(2)
         with col1:
             st.info(f"**依頼者:** {row.get('依頼者', 'なし')}")
             st.info(f"**依頼者mail:** {row.get('メールアドレス', 'なし')}")
         with col2:
             st.warning(f"**重要度:** {row.get('重要度', 'なし')}")
-            st.neutral(f"**現在の状態:** {row.get('承認', '未承認')}" if hasattr(st, "neutral") else f"現在の状態: {row.get('承認', '未承認')}")
+            # 💡 エラーの原因だった箇所を、標準で確実に動く st.write に修正しました！
+            st.write(f"**現在の状態:** {row.get('承認', '未承認')}")
         
         st.text_area("依頼内容:", value=row.get('依頼内容', ''), disabled=True)
         
-        # 承認フォームの入力
         with st.form("approval_form"):
             status = st.radio("ステータス変更:", ["承認", "取下", "保留"], horizontal=True)
             comment = st.text_area("コメント：", placeholder="依頼者へのメッセージを入力してください（J列に反映されます）")
@@ -109,7 +103,6 @@ else:
             submit = st.form_submit_button("送信")
             
             if submit:
-                # GASのdoPost（update）を叩くデータ
                 payload = {
                     "action": "update",
                     "id": selected_id,
