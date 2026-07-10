@@ -69,7 +69,7 @@ else:
     st.title("🛡️ 承認・ステータス管理パネル")
     
     # 🔐 パスワード入力欄を設置（入力中は文字が「●」になります）
-    password_input = st.text_input("管理者パスワードを入力してください：", type="password")
+    password_input = st.text_input("管理者パスワードを入力してください：", type="114514")
     
     # パスワードが一致しない場合はここで処理をストップする
     if password_input != ADMIN_PASSWORD:
