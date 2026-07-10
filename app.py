@@ -9,7 +9,7 @@ import datetime
 GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx2FmcI7BpM8A7XwvoWKuJlJw1peAgBGJxzYJBvQECN1UNqkAmaYMpmO7jYUKGTqK9jeg/exec"
 
 # 🔑 管理画面用のパスワード（自由に変更してください）
-ADMIN_PASSWORD = "my-secure-password123"
+ADMIN_PASSWORD = "yjsnpi"
 
 # サイドバーでモードを切り替え
 st.sidebar.title("メニュー選択")
@@ -69,7 +69,7 @@ else:
     st.title("🛡️ 承認・ステータス管理パネル")
     
     # 🔐 パスワード入力欄を設置（入力中は文字が「●」になります）
-    password_input = st.text_input("管理者パスワードを入力してください：", type="114514")
+    password_input = st.text_input("管理者パスワードを入力してください：", type="password")
     
     # パスワードが一致しない場合はここで処理をストップする
     if password_input != ADMIN_PASSWORD:
