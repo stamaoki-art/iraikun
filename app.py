@@ -1,9 +1,14 @@
 import streamlit as st
 import requests
-import datetime
+import pandas as pd
 
-GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycby3wk7m01-yOqJ7KUU2z17zNNCb5-nPzOdi6lAb52YCucQWJ5RItdDbdlrg1PJ6j9OgiA/exec"
+GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx2FmcI7BpM8A7XwvoWKuJlJw1peAgBGJxzYJBvQECN1UNqkAmaYMpmO7jYUKGTqK9jeg/exec"
 
+st.sidebar.title("メニュー選択")
+mode = st.sidebar.radio("モード切替", ["新規依頼フォーム", "【管理者用】承認パネル"])
+
+if mode == "新規依頼フォーム":
+    # （以前作成した新規作成用コードをここに）
 st.title("📥 依頼フォーム（メールアドレス対応版）")
 
 with st.form(key="request_form", clear_on_submit=True):
@@ -49,3 +54,53 @@ if submit_button:
                     st.error(f"❌ サーバー側でエラーが発生しました (Status Code: {response.status_code})")
             except Exception as e:
                 st.error(f"❌ 通信エラーが発生しました: {e}")
+    # ... 省略 ...
+
+else:
+    st.title("🛡️ 承認・ステータス管理パネル")
+    
+    # スプレッドシートから現在のデータを取得
+    with st.spinner("データを読み込み中..."):
+        res = requests.get(GAS_WEBAPP_URL)
+        all_data = res.json()
+        df = pd.DataFrame(all_data)
+
+    if not df.empty:
+        # ID選択
+        id_list = df["ID"].tolist()
+        selected_id = st.selectbox("処理するIDを選択:", id_list)
+        
+        # 選択されたIDの詳細を自動表示
+        row = df[df["ID"] == selected_id].iloc[0]
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            st.info(f"**依頼者:** {row['依頼者']}")
+            st.info(f"**メール:** {row['メールアドレス']}")
+        with col2:
+            st.warning(f"**重要度:** {row['重要度']}")
+        
+        st.text_area("依頼内容:", value=row['依頼内容'], disabled=True)
+        
+        # 承認フォーム
+        with st.form("approval_form"):
+            status = st.radio("ステータス変更:", ["承認", "取下", "保留"], horizontal=True)
+            comment = st.text_area("担当者コメント:", placeholder="依頼者へのメッセージを入力してください")
+            
+            submit = st.form_submit_button("回答を送信（メール通知実行）")
+            
+            if submit:
+                payload = {
+                    "action": "update",
+                    "id": selected_id,
+                    "status": status,
+                    "comment": comment,
+                    "myoji": row['依頼者'],
+                    "userEmail": row['メールアドレス']
+                }
+                res = requests.post(GAS_WEBAPP_URL, json=payload)
+                if res.status_code == 200:
+                    st.success(f"ID:{selected_id} のステータスを「{status}」に更新し、通知を送信しました。")
+                    st.balloons()
+    else:
+        st.write("現在、処理待ちの依頼はありません。")
